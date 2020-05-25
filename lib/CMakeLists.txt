@@ -1,0 +1,3 @@
+add_subdirectory(state_machine)
+add_subdirectory(water_state)
+add_subdirectory(video_transmitter)
