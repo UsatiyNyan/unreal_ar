@@ -1,3 +1,7 @@
+add_subdirectory(base_exception)
+add_subdirectory(file_descriptor)
+add_subdirectory(udp)
+add_subdirectory(tcp)
 add_subdirectory(state_machine)
 add_subdirectory(water_state)
-add_subdirectory(video_transmitter)
+add_subdirectory(video)
