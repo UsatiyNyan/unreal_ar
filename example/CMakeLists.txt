@@ -15,3 +15,9 @@ target_link_libraries(video_transmitter_usage video)
 
 add_executable(video_receiver_usage src/video_receiver_usage.cpp)
 target_link_libraries(video_receiver_usage video)
+
+add_executable(video_streamer_wo_ip src/video_streamer_wo_ip.cpp)
+target_link_libraries(video_streamer_wo_ip video tcp)
+
+add_executable(video_receiver_wo_ip src/video_receiver_wo_ip.cpp)
+target_link_libraries(video_receiver_wo_ip video tcp)

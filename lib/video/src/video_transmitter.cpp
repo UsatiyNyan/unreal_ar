@@ -45,7 +45,6 @@ Transmitter::Transmitter(const std::string &ip, uint16_t port, int device)
 }
 void Transmitter::send() {
     _capture.read(_frame);
-    cv::imshow("origin", _frame);
     _writer.write(_frame);
 }
 void Transmitter::send_loop() {

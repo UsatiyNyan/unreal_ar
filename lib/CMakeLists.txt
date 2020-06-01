@@ -1,5 +1,6 @@
 add_subdirectory(base_exception)
 add_subdirectory(file_descriptor)
+add_subdirectory(process)
 add_subdirectory(udp)
 add_subdirectory(tcp)
 add_subdirectory(state_machine)
