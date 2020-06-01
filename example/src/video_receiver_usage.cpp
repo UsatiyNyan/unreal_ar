@@ -5,7 +5,6 @@
 #include "video_receiver.h"
 
 int main() {
-    video::Receiver receiver{std::string{"0.0.0.0"}, 8080};
-    receiver.show_loop();
+    video::Receiver{5050}.show_loop();
     return 0;
 }

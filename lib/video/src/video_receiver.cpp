@@ -3,36 +3,33 @@
 //
 
 #include "video_receiver.h"
+#include "video_settings.h"
+#include "base_exception.h"
+
+using exception::Exception;
 
 namespace video {
-Receiver::Receiver(const std::string &ip, uint16_t port)
-    : _server{ip, port}, _stream(_server) {
-    _parse_thread = std::thread([this]() {
-        while (_server.is_opened()) {
-            _stream.find(0xFF);
-            if (_stream.next() != 0xD9) { continue; }
-            if (_stream.next() != 0xFF) { continue; }
-            if (_stream.next() != 0xD8) { continue; }
-
-            {
-                std::lock_guard _{_lock};
-                _frame = cv::imdecode(_stream.retrieve(), cv::IMREAD_COLOR);
-            }
-        }
-    });
-}
-Receiver::~Receiver() {
-    _server.close();
-    _parse_thread.join();
-}
-void Receiver::show() {
-    if (!_frame.empty()) {
-        std::lock_guard _{_lock};
-        cv::imshow("VideoReceiver", _frame);
+Receiver::Receiver(uint16_t port) {
+    std::string api_cmd(
+        "udpsrc port=" + std::to_string(port) + " "
+        "! application/x-rtp,media=video,payload=26,clock-rate=90000,encoding-name=JPEG,"
+        "framerate=" + std::to_string(Settings::FPS) + "/1 "
+        "! rtpjpegdepay "
+        "! jpegdec "
+        "! videoconvert "
+        "! appsink"
+        );
+    _capture = cv::VideoCapture(api_cmd, cv::CAP_GSTREAMER);
+    if (!_capture.isOpened()) {
+        throw Exception("VideoCapture not opened");
     }
 }
+void Receiver::show() {
+    _capture.read(_frame);
+    imshow("received", _frame);
+}
 void Receiver::show_loop() {
-    while (_server.is_opened()) {
+    while (cv::waitKey(Settings::DELAY) == -1) {
         show();
     }
 }

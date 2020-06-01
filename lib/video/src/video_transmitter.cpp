@@ -3,22 +3,53 @@
 //
 
 #include "video_transmitter.h"
+#include "video_settings.h"
+#include "base_exception.h"
+
+using exception::Exception;
 
 namespace video {
-constexpr int fps = 60;
-constexpr int delay = 1000 / fps;
-Transmitter::Transmitter(const std::string &ip, uint16_t port)
-    : _connection{ip, port} {
-    _video_capture.set(cv::CAP_PROP_FPS, 60);
+Transmitter::Transmitter(const std::string &ip, uint16_t port, int device)
+    : _capture(device) {
+    _capture.set(cv::CAP_PROP_FPS, Settings::FPS);
+    if (!_capture.isOpened()) {
+        throw Exception("VideoCapture not opened");
+    }
+    int width = static_cast<int>(_capture.get(cv::CAP_PROP_FRAME_WIDTH));
+    int height = static_cast<int>(_capture.get(cv::CAP_PROP_FRAME_HEIGHT));
+    std::string api_cmd(
+        "appsrc "
+        "! videoconvert "
+        "! video/x-raw,format=YUY2,"
+        "width=" + std::to_string(width) + ","
+        "height=" + std::to_string(height) + ","
+        "framerate=" + std::to_string(Settings::FPS) + "/1 "
+        "! jpegenc "
+        "! rtpjpegpay "
+        "! udpsink "
+        "host=" + ip + " "
+        "port=" + std::to_string(port)
+    );
+    _writer = cv::VideoWriter{
+        api_cmd,
+        0,
+        Settings::FPS,
+        cv::Size(width, height),
+        true};
+
+    if (!_writer.isOpened()) {
+        throw Exception("VideoWriter not opened");
+    }
+
+
 }
 void Transmitter::send() {
-    _video_capture >> _frame;
-    cv::imencode(".jpg", _frame, _frame_jpeg, _compression_params);
-    _connection.write_exact(_frame_jpeg.data(), _frame_jpeg.size());
+    _capture.read(_frame);
     cv::imshow("origin", _frame);
+    _writer.write(_frame);
 }
 void Transmitter::send_loop() {
-    while (cv::waitKey(delay) == -1) {
+    while (cv::waitKey(Settings::DELAY) == -1) {
         send();
     }
 }

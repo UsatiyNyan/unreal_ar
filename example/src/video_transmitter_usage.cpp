@@ -5,7 +5,7 @@
 #include "video_transmitter.h"
 
 int main() {
-    video::Transmitter transmitter{std::string{"0.0.0.0"}, 8080};
-    transmitter.send_loop();
+    video::Transmitter{"0.0.0.0", 5050, 2}.send_loop();
     return 0;
 }
+
